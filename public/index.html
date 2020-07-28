@@ -16,21 +16,23 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
 $(document).ready(function(){
+  var socket = io();
+
   $("button").click(function(){
     $.get("/prova", function(data, status){
       alert("Data: " + data + "\nStatus: " + status);
     });
   });
-});
-$(function () {
-    var socket = io();
-    $('form').submit(function(e) {
-      e.preventDefault(); // prevents page reloading
-      socket.emit('chat message', $('#m').val());
-      $('#m').val('');
-      return false;
-    });
+
+  $('form').submit(function(e) {
+    e.preventDefault(); // prevents page reloading
+    socket.emit('chat message', $('#m').val());
+    $('#m').val('');
+    return false;
   });
+  
+});
+
 </script>
   <title>pràctiques amb xat</title>
 </head>
