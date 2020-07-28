@@ -6,7 +6,7 @@ var contador=1;
 app.use(express.static(__dirname + '/public/'));
 
 app.get('/prova/',function(req,res){
-        res.send('Hi world!');
+        res.send('usuari' + contador);
         console.log('somebody ' + contador);
         contador++;
 });

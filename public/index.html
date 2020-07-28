@@ -8,15 +8,16 @@
 $(document).ready(function(){
   $("button").click(function(){
     $.get("/prova", function(data, status){
-      alert("Data: " + data + "\nStatus: " + status);
+      $("#info1").text("Data: " + data + "\nStatus: " + status);
     });
   });
 });
 </script>
-  <title>pràctiquesº</title>
+  <title>pràctiques</title>
 </head>
 <body>
-  <h1>HI's YOU versio 4.666</h1>
+  <h1>HI's YOU</h1>
+  <p id="info1">Aqui hi ha la informació</p>
 <button>Envia petició a la pàgina</button>
 </body>
 </html>
