@@ -1,0 +1,73 @@
+My implementation will be very naive and simplified, no lag compensation, extrapolation and such, but it should point out a general conception of "multiplayering" with node.
+
+I think the simplest approach is to have an associative array containing players(entities) on both client and server. Then from client side you send commands like {action: "move", target:[32, 100]} and process this command with server logic (where the real game is running). To each socket on connection you should assign a player object or id so you can access it like:
+
+var lastPlayerID = 0;
+var players = {};
+
+server.on("connection", function(socket) {
+
+  var newcommer = new Player({id: lastPlayerID});      
+  players[lastPlayerID] = newcommer;
+  socket.player = newcommer; // or lastPlayerID
+  lastPlayerID++;      
+
+  socket.onMessage = function(message) {
+    this.player.doSomething(); 
+  }
+
+});
+Then each let's say 100ms you could send snapshots to all connected players:
+
+{
+  timestamp: game.delta,
+  players: {
+    1: {x: 32, y: 100},
+    2: {x: 14, y: 11}
+  }
+}
+And then at client side receive data and interpolate from old to new values.
+
+// duration in this simplified example is snapshot sending interval in [ms]
+Player.prototype.interpolateTo = function(data, duration) {
+  if(typeof data.x != "undefined") {
+    // step needed to get `destination x` within `duration` miliseconds
+    this.stepValues.x = Math.abs(data.x - this.x) / duration;
+    this.target.x = data.x;
+  } 
+  // ...
+}
+
+// step you call for each game loop iteration
+Player.prototype.step = function(delta) {
+  if(this.x < this.target.x) {
+    this.x += delta * this.stepValues.x
+  }
+}
+This is a sufficient algorithm for a semi-arcade game with 20 objects at maximum. Decreasing snapshot's interval makes it almost suitable for strategy game with more objects. Your main enemy is bandwidth usage which you can decrease minimizing packet's size. For instance read about BiSON, LZW and don't send data which haven't changed since last snapshot.
+
+My reputation doesn't allow me to post all the links, so I have attached them here: http://pastebin.com/Kh3wvF1D
+
+General introduction to multiplayer conceptions by Glenn Fiedler:
+
+http://gafferongames.com/networking-for-game-programmers/what-every-programmer-needs-to-know-about-game-networking/
+
+Some multiplayer techniques from Quake: This will give u a clue about interpolation and extrapolation(prediction)
+
+http://fabiensanglard.net/quakeSource/quakeSourcePrediction.php
+
+Valve's article about latency compensation and general optimisations:
+
+https://developer.valvesoftware.com/wiki/Latency_Compensating_Methods_in_Client/Server_In-game_Protocol_Design_and_Optimization
+
+Multiplayer techniques in Age of Empires:
+
+http://zoo.cs.yale.edu/classes/cs538/readings/papers/terrano_1500arch.pdf#search=%22Real%20time%20strategy%20networking%20lockstep%22
+
+You can also read my article about optimizing bandwidth usage
+
+http://rezoner.net/minimizing-bandwidth-usage-in-html5-games-using-websocket,299
+
++1 for Ivo's Wetzel Mapple.js it's a big pile of knowledge.
+
+https://github.com/BonsaiDen/Maple.js
